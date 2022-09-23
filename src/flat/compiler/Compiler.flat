@@ -1,0 +1,12 @@
+package flat/compiler
+
+import flat/io/File
+import flat/lexer/Lexer
+
+class {
+  public static async main(String[] args) {
+    let result = Lexer().lex(File(args[1]))
+
+    Console.log(result)
+  }
+}
