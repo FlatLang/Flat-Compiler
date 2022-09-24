@@ -5,7 +5,7 @@ import flat/lexer/Lexer
 
 class {
   public static async main(String[] args) {
-    let result = Lexer.consumeLexemeStream(Lexer().lex(File(args[1])))
+    let result = Lexer().lex(File(args[1])).consumeAll("data")
 
     Console.log(result)
   }
