@@ -5,8 +5,12 @@ import flat/lexer/Lexer
 
 class {
   public static async main(String[] args) {
-    let result = Lexer().lex(File(args[1])).consumeAll("data")
+    let stream = Lexer().lex(File(args[1]))
 
-    Console.log(result)
+    stream.on("data", { Console.log(_) })
+
+    stream.waitFor("close")
+
+    Console.log("Done!")
   }
 }
