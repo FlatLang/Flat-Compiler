@@ -1,16 +1,37 @@
 package flat/compiler
 
 import flat/io/File
+import flat/compiler/models/Token
 import flat/lexer/Lexer
+import flat/parser/Parser
+import flat/log/Logger
+import flat/time/Timer
 
 class {
+  let static Logger log = Logger(Lexer.class)
+
   public static async main(String[] args) {
-    let stream = Lexer().lex(File(args[1]))
+    let completeTimer = Timer():start()
+    let lexTimer = Timer()
+    let parseTimer = Timer()
 
-    stream.on("data", { Console.log(_) })
+    let sourceFile = File(args[1])
 
-    stream.waitFor("close")
+    lexTimer.start()
+    let tokenStream = Lexer().lex(sourceFile)
+    tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
+    tokenStream.on("close", { lexTimer.stop() })
 
-    Console.log("Done!")
+    parseTimer.start()
+    let nodeStream = Parser().parse(sourceFile, tokenStream)
+    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node.class.name} #{node}"}))
+    nodeStream.on("close", { parseTimer.stop() })
+
+    tokenStream.waitFor("close")
+    nodeStream.waitFor("close")
+
+    completeTimer.stop()
+
+    Compiler.log.info("Done! Took #{completeTimer.duration}ms (lexing #{lexTimer.duration - parseTimer.duration}ms, parsing #{parseTimer.duration}ms)")
   }
 }

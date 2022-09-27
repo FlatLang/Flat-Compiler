@@ -15,7 +15,10 @@
         "github:FlatLang/System": "master",
         "github:FlatLang/IO": "master",
         "github:FlatLang/Flat-Lexer": "master",
-        "github:FlatLang/Flat-Parser": "master"
+        "github:FlatLang/Flat-Parser": "master",
+        "github:FlatLang/Flat-Compiler-Models": "master",
+        "github:FlatLang/Time": "master",
+        "github:FlatLang/Logger": "master"
       }
     },
     "flatc": {
