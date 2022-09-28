@@ -24,7 +24,7 @@ class {
 
     parseTimer.start()
     let nodeStream = Parser().parse(sourceFile, tokenStream)
-    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node.class.name} #{node}"}))
+    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
     nodeStream.on("close", { parseTimer.stop() })
 
     tokenStream.waitFor("close")
