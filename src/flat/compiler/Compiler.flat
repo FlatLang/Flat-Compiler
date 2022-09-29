@@ -1,6 +1,7 @@
 package flat/compiler
 
 import flat/io/File
+import flat/ast/Node
 import flat/compiler/models/Token
 import flat/lexer/Lexer
 import flat/parser/Parser
@@ -16,6 +17,7 @@ class {
     let parseTimer = Timer()
 
     let sourceFile = File(args[1])
+    let nodes = Node[]
 
     lexTimer.start()
     let tokenStream = Lexer().lex(sourceFile)
@@ -25,6 +27,7 @@ class {
     parseTimer.start()
     let nodeStream = Parser().parse(sourceFile, tokenStream)
     nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
+    nodeStream.on("data", { nodes.add(_) })
     nodeStream.on("close", { parseTimer.stop() })
 
     tokenStream.waitFor("close")
@@ -33,5 +36,7 @@ class {
     completeTimer.stop()
 
     Compiler.log.info("Done! Took #{completeTimer.duration}ms (lexing #{lexTimer.duration - parseTimer.duration}ms, parsing #{parseTimer.duration}ms)")
+
+    Compiler.log.info(nodes.first.toJson())
   }
 }
