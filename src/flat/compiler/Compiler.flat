@@ -12,9 +12,9 @@ class {
   let static Logger log = Logger(Compiler.class)
 
   public static async main(String[] args) {
-    let completeTimer = Timer():start()
     let lexTimer = Timer()
     let parseTimer = Timer()
+    let completeTimer = Timer():start()
 
     let sourceFile = File(args[1])
     let nodes = Node[]
@@ -23,19 +23,18 @@ class {
     let tokenStream = Lexer().lex(sourceFile)
     tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
     tokenStream.on("close", { lexTimer.stop() })
+    tokenStream.waitFor("close")
 
     parseTimer.start()
     let nodeStream = Parser().parse(sourceFile, tokenStream)
     nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
     nodeStream.on("data", { nodes.add(_) })
     nodeStream.on("close", { parseTimer.stop() })
-
-    tokenStream.waitFor("close")
     nodeStream.waitFor("close")
 
     completeTimer.stop()
 
-    Compiler.log.info("Done! Took #{completeTimer.duration}ms (lexing #{lexTimer.duration - parseTimer.duration}ms, parsing #{parseTimer.duration}ms)")
+    Compiler.log.info("Done! Took #{completeTimer.duration}ms (lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms)")
 
     Compiler.log.info(nodes.first.toJson())
   }
