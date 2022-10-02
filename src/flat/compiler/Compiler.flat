@@ -3,7 +3,9 @@ package flat/compiler
 import flat/io/File
 import flat/ast/Node
 import flat/compiler/models/Token
+import flat/compiler/models/Lexeme
 import flat/lexer/Lexer
+import flat/lexer/Tokenizer
 import flat/parser/Parser
 import flat/log/Logger
 import flat/time/Timer
@@ -12,15 +14,32 @@ class {
   let static Logger log = Logger(Compiler.class)
 
   public static async main(String[] args) {
-    let lexTimer = Timer()
-    let parseTimer = Timer()
-    let completeTimer = Timer():start()
-
-    let sourceFile = File(args[1])
     let nodes = Node[]
 
+    let tokenizerTimer = Timer()
+    let lexTimer = Timer()
+    let parseTimer = Timer()
+    let fileTimer = Timer()
+    let completeTimer = Timer():start()
+
+    fileTimer.start()
+    var String contents = ""
+    let sourceFile = File(args[1])
+    let fileStream = sourceFile.createReadStream()
+    fileStream.on<String>("data", { contents += _ })
+    fileStream.on("close", { fileTimer.stop() })
+    fileStream.waitFor("close")
+
+    tokenizerTimer.start()
+    var Int tokenCount = 0
+    let lexemeStream = Tokenizer().tokenize(contents)
+    lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
+    lexemeStream.on<Lexeme>("data", { tokenCount++ })
+    lexemeStream.on("close", { tokenizerTimer.stop() })
+    lexemeStream.waitFor("close")
+
     lexTimer.start()
-    let tokenStream = Lexer().lex(sourceFile)
+    let tokenStream = Lexer().lexemesToTokens(lexemeStream)
     tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
     tokenStream.on("close", { lexTimer.stop() })
     tokenStream.waitFor("close")
@@ -34,7 +53,7 @@ class {
 
     completeTimer.stop()
 
-    Compiler.log.info("Done! Took #{completeTimer.duration}ms (lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms)")
+    Compiler.log.info("Done! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms (#{tokenCount} tokens))")
 
     Compiler.log.info(nodes.first.toJson())
   }
