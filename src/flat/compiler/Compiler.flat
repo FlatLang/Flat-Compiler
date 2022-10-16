@@ -1,12 +1,11 @@
 package flat/compiler
 
 import flat/io/File
-import flat/ast/Node
-import flat/compiler/models/Token
-import flat/compiler/models/Lexeme
-import flat/lexer/Lexer
-import flat/lexer/Tokenizer
-import flat/parser/Parser
+import flat/ast
+import flat/compiler/models
+import flat/lexer
+import flat/parser
+import flat/parser/flat
 import flat/log/Logger
 import flat/time/Timer
 
@@ -45,7 +44,7 @@ class {
     tokenStream.waitFor("close")
 
     parseTimer.start()
-    let nodeStream = Parser().parse(sourceFile, tokenStream)
+    let nodeStream = Parser().parse(sourceFile, FileParser(), FileScopeParser(), FlatParseContext(), tokenStream)
     nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
     nodeStream.on("data", { nodes.add(_) })
     nodeStream.on("close", { parseTimer.stop() })
