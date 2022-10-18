@@ -44,7 +44,7 @@ class {
     tokenStream.waitFor("close")
 
     parseTimer.start()
-    let nodeStream = Parser().parse(sourceFile, FileParser(), FileScopeParser(), FlatParseContext(), tokenStream)
+    let nodeStream = Parser().parse(FileParser(), FlatParseContext(file: sourceFile), tokenStream)
     nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
     nodeStream.on("data", { nodes.add(_) })
     nodeStream.on("close", { parseTimer.stop() })
