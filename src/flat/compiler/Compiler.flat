@@ -8,6 +8,7 @@ import flat/parser
 import flat/parser/flat
 import flat/log/Logger
 import flat/time/Timer
+import flat/stream
 
 class {
   static Logger log = Logger(Compiler.class)
@@ -44,28 +45,39 @@ class {
     fileTimer.start()
     var String contents = ""
     let fileStream = sourceFile.createReadStream()
-    fileStream.on<String>("data", { contents += _ })
-    fileStream.on("close", { fileTimer.stop() })
+    fileStream.on<String>("data", { contents += _ })$
+    fileStream.on("close", { fileTimer.stop() })$
     fileStream.waitFor("close")
 
     tokenizerTimer.start()
     var Int tokenCount = 0
     let lexemeStream = Tokenizer().tokenize(contents)
-    lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
-    lexemeStream.on<Lexeme>("data", { tokenCount++ })
-    lexemeStream.on("close", { tokenizerTimer.stop() })
+    lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))$
+    lexemeStream.on<Lexeme>("data", { tokenCount++ })$
+    lexemeStream.on("close", { tokenizerTimer.stop() })$
     lexemeStream.waitFor("close")
 
     lexTimer.start()
     let tokenStream = Lexer().lexemesToTokens(lexemeStream)
-    tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
-    tokenStream.on("close", { lexTimer.stop() })
+    tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))$
+    tokenStream.on("close", { lexTimer.stop() })$
     tokenStream.waitFor("close")
 
     parseTimer.start()
     let nodeStream = Parser().parse(FileParser(), FlatParseContext(file: sourceFile), tokenStream)
-    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
-    nodeStream.on("close", { parseTimer.stop() })
+    nodeStream.on("quit", {
+      Compiler.log.info("Closing streams for file #{sourceFile.nativeLocation}")
+      fileStream.emit("close")$
+      fileStream.close()
+      lexemeStream.emit("close")$
+      lexemeStream.close()
+      tokenStream.emit("close")$
+      tokenStream.close()
+      nodeStream.emit("close")$
+      nodeStream.close()
+    })$
+    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))$
+    nodeStream.on("close", { parseTimer.stop() })$
     nodeStream.waitFor("close")
 
     completeTimer.stop()
