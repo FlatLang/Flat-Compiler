@@ -10,7 +10,7 @@ import flat/log/Logger
 import flat/time/Timer
 
 class {
-  let static Logger log = Logger(Compiler.class)
+  static Logger log = Logger(Compiler.class)
 
   public static async main(String[] args) {
     let completeTimer = Timer():start()
