@@ -13,17 +13,36 @@ class {
   let static Logger log = Logger(Compiler.class)
 
   public static async main(String[] args) {
-    let nodes = Node[]
+    let completeTimer = Timer():start()
 
+    let inputFile = File(args[1])
+
+    if (inputFile.isDirectory) {
+      inputFile.getChildFiles(true)
+        .filter({ _.extensionName == "flat" })
+        .forEachParallel({ compileFile(_) })
+    } else {
+      compileFile(inputFile)
+    }
+
+    completeTimer.stop()
+
+    Compiler.log.info("Done! Took #{completeTimer.duration}ms")
+  }
+
+  static async compileFile(File sourceFile) {
     let tokenizerTimer = Timer()
     let lexTimer = Timer()
     let parseTimer = Timer()
     let fileTimer = Timer()
-    let completeTimer = Timer():start()
+    let completeTimer = Timer()
+
+    Compiler.log.info("Compiling file #{sourceFile.nativeLocation}...")
+
+    completeTimer.start()
 
     fileTimer.start()
     var String contents = ""
-    let sourceFile = File(args[1])
     let fileStream = sourceFile.createReadStream()
     fileStream.on<String>("data", { contents += _ })
     fileStream.on("close", { fileTimer.stop() })
@@ -46,14 +65,11 @@ class {
     parseTimer.start()
     let nodeStream = Parser().parse(FileParser(), FlatParseContext(file: sourceFile), tokenStream)
     nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
-    nodeStream.on("data", { nodes.add(_) })
     nodeStream.on("close", { parseTimer.stop() })
     nodeStream.waitFor("close")
 
     completeTimer.stop()
 
-    Compiler.log.info("Done! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms (#{tokenCount} tokens))")
-
-    Compiler.log.info(nodes.first.toJson())
+    Compiler.log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms (#{tokenCount} tokens))")
   }
 }
