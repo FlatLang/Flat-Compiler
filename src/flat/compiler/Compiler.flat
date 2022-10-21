@@ -8,7 +8,7 @@ import flat/parser
 import flat/parser/flat
 import flat/log/Logger
 import flat/time/Timer
-import flat/stream
+import flat/eventstream
 import flat/fucli
 import flat/regex
 
