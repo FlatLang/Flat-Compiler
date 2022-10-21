@@ -1,6 +1,6 @@
 package flat/compiler
 
-import flat/io/File
+import flat/io
 import flat/ast
 import flat/compiler/models
 import flat/lexer
@@ -18,10 +18,12 @@ class {
   static Logger log = Logger(Compiler.class)
 
   static CliArg excludeArg = CliArg("--exclude", ["-x"], count: 1)
+  static CliArg syncArg = CliArg("--sync")
 
   public static async main(String[] args) {
     let fucli = FuCli([
       excludeArg,
+      syncArg,
     ]):parse(args.skip(2))
 
     let completeTimer = Timer():start()
@@ -56,42 +58,54 @@ class {
     completeTimer.start()
 
     fileTimer.start()
-    var String contents = ""
     let fileStream = sourceFile.createReadStream()
-    fileStream.on<String>("data", { contents += _ })$
-    fileStream.on("close", { fileTimer.stop() })$
-    fileStream.waitFor("close")
+    fileStream.on("close", { fileTimer.stop() })
+
+    if (syncArg.enabled) fileStream.waitFor("close")
 
     tokenizerTimer.start()
     var Int tokenCount = 0
-    let lexemeStream = Tokenizer().tokenize(contents)
-    lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))$
-    lexemeStream.on<Lexeme>("data", { tokenCount++ })$
-    lexemeStream.on("close", { tokenizerTimer.stop() })$
-    lexemeStream.waitFor("close")
+    let lexemeStream = Tokenizer().tokenize(fileStream)
+    lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
+    lexemeStream.on<Lexeme>("data", { tokenCount++ })
+    lexemeStream.on("close", { tokenizerTimer.stop() })
+    lexemeStream.emit("start")
+
+    if (syncArg.enabled) lexemeStream.waitFor("close")
 
     lexTimer.start()
     let tokenStream = Lexer().lexemesToTokens(lexemeStream)
-    tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))$
-    tokenStream.on("close", { lexTimer.stop() })$
-    tokenStream.waitFor("close")
+    tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
+    tokenStream.on("close", { lexTimer.stop() })
+    tokenStream.emit("start")
+
+    if (syncArg.enabled) tokenStream.waitFor("close")
 
     parseTimer.start()
     let nodeStream = Parser().parse(FileParser(), FlatParseContext(file: sourceFile), tokenStream)
     nodeStream.on("quit", {
       Compiler.log.info("Closing streams for file #{sourceFile.nativeLocation}")
-      fileStream.emit("close")$
+      fileStream.emit("close")
       fileStream.close()
-      lexemeStream.emit("close")$
+      lexemeStream.emit("close")
       lexemeStream.close()
-      tokenStream.emit("close")$
+      tokenStream.emit("close")
       tokenStream.close()
-      nodeStream.emit("close")$
+      nodeStream.emit("close")
       nodeStream.close()
-    })$
-    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))$
-    nodeStream.on("close", { parseTimer.stop() })$
-    nodeStream.waitFor("close")
+    })
+    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
+    nodeStream.on("close", { parseTimer.stop() })
+    nodeStream.emit("start")
+
+    if (syncArg.enabled) nodeStream.waitFor("close")
+
+    if (!syncArg.enabled) {
+      fileStream.waitFor("close")
+      lexemeStream.waitFor("close")
+      tokenStream.waitFor("close")
+      nodeStream.waitFor("close")
+    }
 
     completeTimer.stop()
 
