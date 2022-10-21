@@ -9,18 +9,31 @@ import flat/parser/flat
 import flat/log/Logger
 import flat/time/Timer
 import flat/stream
+import flat/fucli
+import flat/regex
+
+import flat/regex/RegexStringExtensions
 
 class {
   static Logger log = Logger(Compiler.class)
 
+  static CliArg excludeArg = CliArg("--exclude", ["-x"], count: 1)
+
   public static async main(String[] args) {
+    let fucli = FuCli([
+      excludeArg,
+    ]):parse(args.skip(2))
+
     let completeTimer = Timer():start()
 
     let inputFile = File(args[1])
 
+    let excludes = excludeArg.values.map({ Pattern(_) })
+
     if (inputFile.isDirectory) {
       inputFile.getChildFiles(true)
         .filter({ _.extensionName == "flat" })
+        .filterAsync(file => excludes.noneAsync(x => file.getCanonicalPath().matches(x)))
         .forEachParallel({ compileFile(_) })
     } else {
       compileFile(inputFile)

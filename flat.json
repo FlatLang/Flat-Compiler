@@ -19,7 +19,9 @@
         "github:FlatLang/Flat-Parser": "master",
         "github:FlatLang/Flat-Compiler-Models": "master",
         "github:FlatLang/Time": "master",
-        "github:FlatLang/Logger": "master"
+        "github:FlatLang/Logger": "master",
+        "github:FlatLang/FuCli": "master",
+        "github:FlatLang/Regex": "master"
       }
     },
     "flatc": {
