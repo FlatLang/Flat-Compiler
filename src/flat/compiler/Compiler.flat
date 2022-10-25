@@ -92,7 +92,7 @@ class {
     if (syncArg.enabled) tokenStream.waitFor("close")
 
     parseTimer.start()
-    let nodeStream = Parser().parse(FileParser(), FlatParseContext(file: sourceFile), tokenStream)
+    let nodeStream = Parser().parse(FileParser(), ParseContext(file: sourceFile), tokenStream)
     nodeStream.on("quit", {
       Compiler.log.info("Closing streams for file #{sourceFile.nativeLocation}")
       fileStream.emit("close")
