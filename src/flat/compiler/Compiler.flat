@@ -19,12 +19,14 @@ class {
 
   static CliArg excludeArg = CliArg("--exclude", ["-x"], count: 1)
   static CliArg threadsArg = CliArg("--threads", ["-t"], count: 1)
+  static CliArg languageArg = CliArg("--language", ["--lang"], count: 1)
   static CliArg syncArg = CliArg("--sync")
 
   public static async main(String[] args) {
     let fucli = FuCli([
       excludeArg,
       threadsArg,
+      languageArg,
       syncArg,
     ]):parse(args.skip(2))
 
@@ -33,10 +35,11 @@ class {
     let inputFile = File(args[1])
 
     let excludes = excludeArg.values.map({ Pattern(_) })
+    let extension = languageArg.value ?: "flat"
 
     if (inputFile.isDirectory) {
       let files = inputFile.getChildFiles(true)
-        .filter({ _.extensionName == "flat" })
+        .filter({ _.extensionName == extension })
         .filterAsync(file => excludes.noneAsync(x => file.getCanonicalPath().matches(x)))
 
       if (syncArg.enabled) {
