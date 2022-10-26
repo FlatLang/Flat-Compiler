@@ -17,6 +17,7 @@
         "github:FlatLang/Flat-Lexer": "master",
         "github:FlatLang/Parser-Core": "master",
         "github:FlatLang/Flat-Parser": "master",
+        "github:FlatLang/Java-Parser": "master",
         "github:FlatLang/Flat-Compiler-Models": "master",
         "github:FlatLang/Time": "master",
         "github:FlatLang/Logger": "master",

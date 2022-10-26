@@ -5,7 +5,8 @@ import flat/ast
 import flat/compiler/models
 import flat/lexer
 import flat/parser
-import flat/parser/flat
+import flat/parser/flat/FileParser as FlatFileParser
+import flat/parser/java/FileParser as JavaFileParser
 import flat/log/Logger
 import flat/time/Timer
 import flat/eventstream
@@ -91,8 +92,13 @@ class {
 
     if (syncArg.enabled) tokenStream.waitFor("close")
 
+    let rootParser = match languageArg.value {
+      "java" => JavaFileParser()
+      default => FlatFileParser()
+    }
+
     parseTimer.start()
-    let nodeStream = Parser().parse(FileParser(), ParseContext(file: sourceFile), tokenStream)
+    let nodeStream = Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream)
     nodeStream.on("quit", {
       Compiler.log.info("Closing streams for file #{sourceFile.nativeLocation}")
       fileStream.emit("close")
