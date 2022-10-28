@@ -19,6 +19,8 @@
         "github:FlatLang/Flat-Parser": "master",
         "github:FlatLang/Java-Parser": "master",
         "github:FlatLang/Flat-Compiler-Models": "master",
+        "github:FlatLang/Flat-Flat-Writer": "master",
+        "github:FlatLang/Flat-ES6-Writer": "master",
         "github:FlatLang/Time": "master",
         "github:FlatLang/Logger": "master",
         "github:FlatLang/FuCli": "master",

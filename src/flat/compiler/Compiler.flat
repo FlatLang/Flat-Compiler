@@ -7,6 +7,8 @@ import flat/lexer
 import flat/parser
 import flat/parser/flat/FileParser as FlatFileParser
 import flat/parser/java/FileParser as JavaFileParser
+import flat/writer/es6/Es6Writer
+import flat/writer/flat/FlatWriter
 import flat/log/Logger
 import flat/time/Timer
 import flat/eventstream
@@ -21,6 +23,7 @@ class {
   static CliArg excludeArg = CliArg("--exclude", ["-x"], count: 1)
   static CliArg threadsArg = CliArg("--threads", ["-t"], count: 1)
   static CliArg languageArg = CliArg("--language", ["--lang"], count: 1)
+  static CliArg targetArg = CliArg("--target", ["-t"], count: 1)
   static CliArg syncArg = CliArg("--sync")
 
   public static async main(String[] args) {
@@ -28,6 +31,7 @@ class {
       excludeArg,
       threadsArg,
       languageArg,
+      targetArg,
       syncArg,
     ]):parse(args.skip(2))
 
@@ -62,6 +66,7 @@ class {
     let lexTimer = Timer()
     let parseTimer = Timer()
     let fileTimer = Timer()
+    let writeTimer = Timer()
     let completeTimer = Timer()
 
     Compiler.log.info("Compiling file #{sourceFile.nativeLocation}...")
@@ -116,15 +121,28 @@ class {
 
     if (syncArg.enabled) nodeStream.waitFor("close")
 
+    let writer = match targetArg.value {
+      "es6" => Es6Writer()
+      default => FlatWriter()
+    }
+
+    writeTimer.start()
+    let writeStream = writer.write(nodeStream)
+    writeStream.on("close", { writeTimer.stop() })
+    writeStream.emit("start")
+
+    if (syncArg.enabled) writeStream.waitFor("close")
+
     if (!syncArg.enabled) {
       fileStream.waitFor("close")
       lexemeStream.waitFor("close")
       tokenStream.waitFor("close")
       nodeStream.waitFor("close")
+      writeStream.waitFor("close")
     }
 
     completeTimer.stop()
 
-    Compiler.log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms (#{tokenCount} tokens))")
+    Compiler.log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms, writing #{writeTimer.duration}ms (#{tokenCount} tokens))")
   }
 }
