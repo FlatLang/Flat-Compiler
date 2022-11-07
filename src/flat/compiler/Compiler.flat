@@ -6,6 +6,7 @@ import flat/compiler/models
 import flat/lexer
 import flat/parser
 import flat/parser/flat/FileParser as FlatFileParser
+import flat/parser/java/FileParser as JavaFileParser
 import flat/writer/es6/Es6Writer
 import flat/writer/flat/FlatWriter
 import flat/log/Logger
@@ -97,6 +98,7 @@ class {
     if (syncArg.enabled) tokenStream.waitFor("close")
 
     let rootParser = match languageArg.value {
+      "java" => JavaFileParser()
       default => FlatFileParser()
     }
 
