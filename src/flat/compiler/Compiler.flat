@@ -25,6 +25,7 @@ class {
   static CliArg languageArg = CliArg("--language", ["--lang"], count: 1)
   static CliArg targetArg = CliArg("--target", ["-t"], count: 1)
   static CliArg syncArg = CliArg("--sync")
+  static CliArg dryArg = CliArg("--dry")
 
   public static async main(String[] args) {
     let fucli = FuCli([
@@ -33,6 +34,7 @@ class {
       languageArg,
       targetArg,
       syncArg,
+      dryArg,
     ]):parse(args.skip(2))
 
     let completeTimer = Timer():start()
@@ -69,19 +71,21 @@ class {
     let writeTimer = Timer()
     let completeTimer = Timer()
 
+    let streams = EventStream[]
+
     Compiler.log.info("Compiling file #{sourceFile.nativeLocation}...")
 
     completeTimer.start()
 
     fileTimer.start()
-    let fileStream = sourceFile.createReadStream()
+    let fileStream = streams.add(sourceFile.createReadStream())
     fileStream.on("close", { fileTimer.stop() })
 
     if (syncArg.enabled) fileStream.waitFor("close")
 
     tokenizerTimer.start()
     var Int tokenCount = 0
-    let lexemeStream = Tokenizer().tokenize(fileStream)
+    let lexemeStream = streams.add(Tokenizer().tokenize(fileStream))
     lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
     lexemeStream.on<Lexeme>("data", { tokenCount++ })
     lexemeStream.on("close", { tokenizerTimer.stop() })
@@ -90,7 +94,7 @@ class {
     if (syncArg.enabled) lexemeStream.waitFor("close")
 
     lexTimer.start()
-    let tokenStream = Lexer().lexemesToTokens(lexemeStream)
+    let tokenStream = streams.add(Lexer().lexemesToTokens(lexemeStream))
     tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
     tokenStream.on("close", { lexTimer.stop() })
     tokenStream.emit("start")
@@ -103,17 +107,13 @@ class {
     }
 
     parseTimer.start()
-    let nodeStream = Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream)
+    let nodeStream = streams.add(Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream))
     nodeStream.on("quit", {
       Compiler.log.info("Closing streams for file #{sourceFile.nativeLocation}")
-      fileStream.emit("close")
-      fileStream.close()
-      lexemeStream.emit("close")
-      lexemeStream.close()
-      tokenStream.emit("close")
-      tokenStream.close()
-      nodeStream.emit("close")
-      nodeStream.close()
+      streams.forEach((stream) => {
+        stream.emit("close")
+        stream.close()
+      })
     })
     nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
     nodeStream.on("close", { parseTimer.stop() })
@@ -126,19 +126,17 @@ class {
       default => FlatWriter()
     }
 
-    writeTimer.start()
-    let writeStream = writer.write(nodeStream)
-    writeStream.on("close", { writeTimer.stop() })
-    writeStream.emit("start")
+    if (!dryArg.enabled) {
+      writeTimer.start()
+      let writeStream = streams.add(writer.write(nodeStream))
+      writeStream.on("close", { writeTimer.stop() })
+      writeStream.emit("start")
 
-    if (syncArg.enabled) writeStream.waitFor("close")
+      if (syncArg.enabled) writeStream.waitFor("close")
+    }
 
     if (!syncArg.enabled) {
-      fileStream.waitFor("close")
-      lexemeStream.waitFor("close")
-      tokenStream.waitFor("close")
-      nodeStream.waitFor("close")
-      writeStream.waitFor("close")
+      streams.forEachAsync({ _.waitFor("close") })
     }
 
     completeTimer.stop()
