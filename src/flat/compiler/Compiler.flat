@@ -60,7 +60,7 @@ class {
 
     completeTimer.stop()
 
-    Compiler.log.info("Done! Took #{completeTimer.duration}ms")
+    log.info("Done! Took #{completeTimer.duration}ms")
   }
 
   static async compileFile(File sourceFile) {
@@ -73,7 +73,7 @@ class {
 
     let streams = EventStream[]
 
-    Compiler.log.info("Compiling file #{sourceFile.nativeLocation}...")
+    log.info("Compiling file #{sourceFile.nativeLocation}...")
 
     completeTimer.start()
 
@@ -86,7 +86,7 @@ class {
     tokenizerTimer.start()
     var Int tokenCount = 0
     let lexemeStream = streams.add(Tokenizer().tokenize(fileStream))
-    lexemeStream.on<Lexeme>("data", lexeme => Compiler.log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
+    lexemeStream.on<Lexeme>("data", lexeme => log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
     lexemeStream.on<Lexeme>("data", { tokenCount++ })
     lexemeStream.on("close", { tokenizerTimer.stop() })
     lexemeStream.emit("start")
@@ -95,7 +95,7 @@ class {
 
     lexTimer.start()
     let tokenStream = streams.add(Lexer().lexemesToTokens(lexemeStream))
-    tokenStream.on<Token>("data", token => Compiler.log.debugFunc({"Token: '#{token.value}'"}))
+    tokenStream.on<Token>("data", token => log.debugFunc({"Token: '#{token.value}'"}))
     tokenStream.on("close", { lexTimer.stop() })
     tokenStream.emit("start")
 
@@ -109,13 +109,13 @@ class {
     parseTimer.start()
     let nodeStream = streams.add(Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream))
     nodeStream.on("quit", {
-      Compiler.log.info("Closing streams for file #{sourceFile.nativeLocation}")
+      log.info("Closing streams for file #{sourceFile.nativeLocation}")
       streams.forEach((stream) => {
         stream.emit("close")
         stream.close()
       })
     })
-    nodeStream.on<NodeResult>("data", result => Compiler.log.debugFunc({"Node: #{result.node}"}))
+    nodeStream.on<NodeResult>("data", result => log.debugFunc({"Node: #{result.node}"}))
     nodeStream.on("close", { parseTimer.stop() })
     nodeStream.emit("start")
 
@@ -141,6 +141,6 @@ class {
 
     completeTimer.stop()
 
-    Compiler.log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms, writing #{writeTimer.duration}ms (#{tokenCount} tokens))")
+    log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms, writing #{writeTimer.duration}ms (#{tokenCount} tokens))")
   }
 }
