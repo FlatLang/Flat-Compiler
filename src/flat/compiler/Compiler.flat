@@ -115,7 +115,7 @@ class {
         stream.close()
       })
     })
-    nodeStream.on("data", node => Compiler.log.debugFunc({"Node: #{node}"}))
+    nodeStream.on<NodeResult>("data", result => Compiler.log.debugFunc({"Node: #{result.node}"}))
     nodeStream.on("close", { parseTimer.stop() })
     nodeStream.emit("start")
 
