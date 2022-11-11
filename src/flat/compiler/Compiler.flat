@@ -121,12 +121,11 @@ class {
 
     if (syncArg.enabled) nodeStream.waitFor("close")
 
-    let writer = match targetArg.value {
-      "es6" => Es6Writer()
-      default => FlatWriter()
-    }
-
     if (!dryArg.enabled) {
+      let writer = match targetArg.value {
+        "es6" => Es6Writer()
+        default => FlatWriter()
+      }
       writeTimer.start()
       let writeStream = streams.add(writer.write(nodeStream))
       writeStream.on("close", { writeTimer.stop() })
