@@ -16,6 +16,7 @@ import flat/fucli
 import flat/regex
 
 import flat/regex/RegexStringExtensions
+import flat/writer/WriterPatternExtensions
 
 class {
   static Logger log = Logger(Compiler.class)
@@ -126,8 +127,13 @@ class {
         "es6" => Es6Writer()
         default => FlatWriter()
       }
+      let rootWriter = match targetArg.value {
+        "es6" => FlatFileParser().pattern.getWriter()
+        default => FlatFileParser().pattern.getWriter()
+      }
+
       writeTimer.start()
-      let writeStream = streams.add(writer.write(nodeStream))
+      let writeStream = streams.add(writer.write(nodeStream, rootWriter))
       writeStream.on("close", { writeTimer.stop() })
       writeStream.emit("start")
 
