@@ -50,10 +50,17 @@ class {
         .filter({ _.extensionName == extension })
         .filterAsync(file => excludes.noneAsync(x => file.getCanonicalPath().matches(x)))
 
-      if (syncArg.enabled) {
-        files.forEachAsync({ compileFile(_) })
+      let failures = if (syncArg.enabled) {
+        files.filterAsync({ !compileFile(_) })
       } else {
-        files.forEachParallel({ compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg.value) : 10)
+        files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg.value) : 10)
+      }
+
+      if (failures.count > 0) {
+        log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"}")
+        System.exit(1)
+      } else {
+        log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}")
       }
     } else {
       compileFile(inputFile)
@@ -64,7 +71,9 @@ class {
     log.info("Done! Took #{completeTimer.duration}ms")
   }
 
-  static async compileFile(File sourceFile) {
+  static async compileFile(File sourceFile) -> Bool {
+    var successful = true
+
     let tokenizerTimer = Timer()
     let lexTimer = Timer()
     let parseTimer = Timer()
@@ -110,6 +119,7 @@ class {
     parseTimer.start()
     let nodeStream = streams.add(Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream))
     nodeStream.on("quit", {
+      successful = false
       log.info("Closing streams for file #{sourceFile.nativeLocation}")
       streams.forEach((stream) => {
         stream.emit("close")
@@ -147,5 +157,7 @@ class {
     completeTimer.stop()
 
     log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms, writing #{writeTimer.duration}ms (#{tokenCount} tokens))")
+
+    return successful
   }
 }
