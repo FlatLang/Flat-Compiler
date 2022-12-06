@@ -94,13 +94,16 @@ class {
 
     if (syncArg.enabled) fileStream.waitFor("close")
 
+    let bytes = sourceFile.bytes
+    var Int bytesParsed = 0
+
     if (syncArg.enabled) {
       startTime = Time.currentTimeMillis
       processedSteps = 0
       lastProgress = 0
-      stepsToProcess = sourceFile.bytes
+      stepsToProcess = bytes
     } else {
-      stepsToProcess += sourceFile.bytes
+      stepsToProcess += bytes
     }
 
     tokenizerTimer.start()
@@ -135,11 +138,14 @@ class {
         stream.emit("close")
         stream.close()
       })
+      processedSteps += bytes - bytesParsed
+      startTime = Time.currentTimeMillis
     })
     nodeStream.on<NodeResult>("data", result => log.debugFunc({"Node: #{result.node}"}))
     nodeStream.on<Token>("parsed_token", token => {
       processedSteps += token.value.count
-      Console.log("\x1B[1A\x1B[K" + getProgressLog())
+      bytesParsed += token.value.count
+      Console.log("\x1B[1F\x1B[K" + getProgressLog())
     })
     nodeStream.on("close", { parseTimer.stop() })
     nodeStream.emit("start")
