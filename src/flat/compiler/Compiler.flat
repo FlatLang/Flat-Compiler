@@ -62,16 +62,14 @@ class {
       files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg.value) : 10)
     }
 
-    if (failures.count > 0) {
-      log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"}")
-      System.exit(1)
-    } else {
-      log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}, #{totalLineCount} line#{totalLineCount == 1 ? "" : "s"}, #{totalBytes} byte#{totalBytes == 1 ? "" : "s"}")
-    }
-
     completeTimer.stop()
 
-    log.info("Done! Took #{completeTimer.duration}ms")
+    if (failures.count > 0) {
+      log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"} in #{completeTimer.duration.millisToTime()}")
+      System.exit(1)
+    } else {
+      log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}, #{totalLineCount} line#{totalLineCount == 1 ? "" : "s"}, #{Long.toFileSize(totalBytes)} in #{completeTimer.duration.millisToTime()}")
+    }
   }
 
   static async compileFile(File sourceFile) -> Bool {
@@ -187,7 +185,7 @@ class {
 
     loggedProgress = false
 
-    log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms, writing #{writeTimer.duration}ms (#{tokenCount} tokens))")
+    log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration.millisToTime()} (reading file: #{fileTimer.duration.millisToTime()}, tokenizing #{tokenizerTimer.duration.millisToTime()}, lexing #{lexTimer.duration.millisToTime()}, parsing #{parseTimer.duration.millisToTime()}, writing #{writeTimer.duration.millisToTime()} (#{tokenCount} tokens))")
 
     return successful
   }
@@ -202,7 +200,7 @@ class {
 
 		let remainingMs = Math.round(elapsedMs * (100.0 / lastProgress)) - elapsedMs
 
-		return (remainingMs / 1000) + "s"
+		return remainingMs.millisToTime(millis: false)
 	}
 
   static var Int processedSteps = 0
