@@ -50,25 +50,23 @@ class {
     let excludes = excludeArg.values.map({ Pattern(_) })
     let extension = languageArg.value ?: "flat"
 
-    if (inputFile.isDirectory) {
-      let files = inputFile.getChildFiles(true)
+    let files = inputFile.isDirectory
+      ? inputFile.getChildFiles(true)
         .filter({ _.extensionName == extension })
-        .filterAsync(file => excludes.noneAsync(x => file.getCanonicalPath().matches(x)))
+        .filterParallel(file => excludes.noneParallel({ file.getCanonicalPath().matches(_) }))
+      : Array():add(inputFile)
 
-      let failures = if (syncArg.enabled) {
-        files.filterAsync({ !compileFile(_) })
-      } else {
-        files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg.value) : 10)
-      }
-
-      if (failures.count > 0) {
-        log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"}")
-        System.exit(1)
-      } else {
-        log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}, #{totalLineCount} line#{totalLineCount == 1 ? "" : "s"}, #{totalBytes} byte#{totalBytes == 1 ? "" : "s"}")
-      }
+    let failures = if (syncArg.enabled) {
+      files.filterAsync({ !compileFile(_) })
     } else {
-      compileFile(inputFile)
+      files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg.value) : 10)
+    }
+
+    if (failures.count > 0) {
+      log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"}")
+      System.exit(1)
+    } else {
+      log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}, #{totalLineCount} line#{totalLineCount == 1 ? "" : "s"}, #{totalBytes} byte#{totalBytes == 1 ? "" : "s"}")
     }
 
     completeTimer.stop()
