@@ -29,6 +29,8 @@ class {
   static CliArg syncArg = CliArg("--sync")
   static CliArg dryArg = CliArg("--dry")
 
+  static var Bool loggedProgress = false
+
   public static async main(String[] args) {
     let fucli = FuCli([
       excludeArg,
@@ -145,7 +147,7 @@ class {
     nodeStream.on<Token>("parsed_token", token => {
       processedSteps += token.value.count
       bytesParsed += token.value.count
-      Console.log("\x1B[1F\x1B[K" + getProgressLog())
+      logProgress()
     })
     nodeStream.on("close", { parseTimer.stop() })
     nodeStream.emit("start")
@@ -176,6 +178,8 @@ class {
 
     completeTimer.stop()
 
+    loggedProgress = false
+
     log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration}ms (reading file: #{fileTimer.duration}ms, tokenizing #{tokenizerTimer.duration}ms, lexing #{lexTimer.duration}ms, parsing #{parseTimer.duration}ms, writing #{writeTimer.duration}ms (#{tokenCount} tokens))")
 
     return successful
@@ -198,6 +202,14 @@ class {
   static var Int stepsToProcess = 0
   static var Int lastProgress = 0
   static var Long startTime = Time.currentTimeMillis
+
+  static logProgress() {
+    let prefix = loggedProgress ? "\x1B[1A\x1B[K" : ""
+
+    Console.log(prefix + getProgressLog())
+
+    loggedProgress = true
+  }
 
   static getProgressLog() -> String {
     if (stepsToProcess == 0) {
