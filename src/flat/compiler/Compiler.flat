@@ -29,6 +29,8 @@ class {
   static CliArg syncArg = CliArg("--sync")
   static CliArg dryArg = CliArg("--dry")
 
+  static var Long totalLineCount = 0
+  static var Long totalBytes = 0
   static var Bool loggedProgress = false
 
   public static async main(String[] args) {
@@ -63,7 +65,7 @@ class {
         log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"}")
         System.exit(1)
       } else {
-        log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}")
+        log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}, #{totalLineCount} line#{totalLineCount == 1 ? "" : "s"}, #{totalBytes} byte#{totalBytes == 1 ? "" : "s"}")
       }
     } else {
       compileFile(inputFile)
@@ -97,6 +99,7 @@ class {
     if (syncArg.enabled) fileStream.waitFor("close")
 
     let bytes = sourceFile.bytes
+    totalBytes += bytes
     var Int bytesParsed = 0
 
     if (syncArg.enabled) {
@@ -121,6 +124,11 @@ class {
     lexTimer.start()
     let tokenStream = streams.add(Lexer().lexemesToTokens(lexemeStream))
     tokenStream.on<Token>("data", token => log.debugFunc({"Token: '#{token.value}'"}))
+    tokenStream.on<Token>("data", token => {
+      if (token.type == Token.Type.WHITESPACE) {
+        totalLineCount += token.value.howMany('\n')
+      }
+    })
     tokenStream.on("close", { lexTimer.stop() })
     tokenStream.emit("start")
 
