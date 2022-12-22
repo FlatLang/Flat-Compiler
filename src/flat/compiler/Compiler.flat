@@ -111,7 +111,7 @@ class {
     tokenizerTimer.start()
     var Int tokenCount = 0
     let lexemeStream = streams.add(Tokenizer().tokenize(fileStream))
-    lexemeStream.on<Lexeme>("data", lexeme => log.debugFunc({"Lexeme: '#{lexeme.value}'"}))
+    lexemeStream.on<Lexeme>("data", lexeme => log.debug({"Lexeme: '#{lexeme.value}'"}))
     lexemeStream.on<Lexeme>("data", { tokenCount++ })
     lexemeStream.on("close", { tokenizerTimer.stop() })
     lexemeStream.emit("start")
@@ -120,7 +120,7 @@ class {
 
     lexTimer.start()
     let tokenStream = streams.add(Lexer().lexemesToTokens(lexemeStream))
-    tokenStream.on<Token>("data", token => log.debugFunc({"Token: '#{token.value}'"}))
+    tokenStream.on<Token>("data", token => log.debug({"Token: '#{token.value}'"}))
     tokenStream.on<Token>("data", token => {
       if (token.type == Token.Type.WHITESPACE) {
         totalLineCount += token.value.howMany('\n')
@@ -148,7 +148,7 @@ class {
       processedSteps += bytes - bytesParsed
       startTime = Time.currentTimeMillis
     })
-    nodeStream.on<NodeResult>("data", result => log.debugFunc({"Node: #{result.node}"}))
+    nodeStream.on<NodeResult>("data", result => log.debug({"Node: #{result.node}"}))
     nodeStream.on<Token>("parsed_token", token => {
       processedSteps += token.value.count
       bytesParsed += token.value.count
