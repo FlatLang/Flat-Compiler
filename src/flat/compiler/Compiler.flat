@@ -159,7 +159,7 @@ class {
 
     if (syncArg.enabled) nodeStream.waitFor("close")
 
-    if (!dryArg.enabled) {
+    if (!dryArg.enabled && successful) {
       let writer = match targetArg.value {
         "es6" => Es6Writer()
         default => FlatWriter()
