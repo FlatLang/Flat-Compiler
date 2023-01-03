@@ -25,7 +25,8 @@
         "github:FlatLang/Logger": "master",
         "github:FlatLang/FuCli": "master",
         "github:FlatLang/Regex": "master",
-        "github:FlatLang/Progress-Bar": "master"
+        "github:FlatLang/Progress-Bar": "master",
+        "github:FlatLang/Console-Escape-Codes": "master"
       }
     },
     "flatc": {

@@ -20,6 +20,8 @@ import flat/progressbar
 import flat/regex/RegexStringExtensions
 import flat/writer/WriterPatternExtensions
 
+import static flat/console/EscapeCode
+
 class {
   static Logger log = Logger(Compiler.class)
 
@@ -193,7 +195,7 @@ class {
   }
 
   static logProgress() {
-    let prefix = loggedProgress ? "\x1B[1A\x1B[K" : ""
+    let prefix = loggedProgress ? cursorMoveUp(1) + eraseFromCursorToEndOfLine() : ""
 
     Console.log(prefix + progressBar.getProgressLog())
 
