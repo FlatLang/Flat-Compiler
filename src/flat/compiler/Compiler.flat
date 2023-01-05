@@ -155,9 +155,9 @@ class {
     nodeStream.on("quit", {
       successful = false
       log.info("Closing streams for file #{sourceFile.nativeLocation}")
-      streams.forEach((stream) => {
-        stream.emit("close")
-        stream.close()
+      streams.forEach({
+        _x.emit("close")
+        _x.close()
       })
       progressBar.processedSteps += bytes - bytesParsed
       progressBar.startTime = Time.currentTimeMillis
