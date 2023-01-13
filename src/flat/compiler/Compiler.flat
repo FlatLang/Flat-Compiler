@@ -154,11 +154,10 @@ class {
     let nodeStream = streams.add(Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream))
     nodeStream.on("quit", {
       successful = false
+
       log.info("Closing streams for file #{sourceFile.nativeLocation}")
-      streams.forEach({
-        _x.emit("close")
-        _x.close()
-      })
+      streams.forEach({ _:emit("close").close() })
+
       progressBar.processedSteps += bytes - bytesParsed
       progressBar.startTime = Time.currentTimeMillis
     })
