@@ -9,9 +9,8 @@ import flat/parser/flat/FileParser as FlatFileParser
 import flat/parser/java/FileParser as JavaFileParser
 import flat/writer/es6/Es6Writer
 import flat/writer/flat/FlatWriter
-import flat/log/Logger
-import flat/time/Time
-import flat/time/Timer
+import flat/log
+import flat/time
 import flat/eventstream
 import flat/fucli
 import flat/regex
