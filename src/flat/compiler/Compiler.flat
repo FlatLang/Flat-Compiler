@@ -24,12 +24,49 @@ import static flat/console/EscapeCode
 class {
   static Logger log = Logger(Compiler.class)
 
-  static CliArg excludeArg = CliArg("--exclude", ["-x"], count: 1)
-  static CliArg threadsArg = CliArg("--threads", ["-t"], count: 1)
-  static CliArg languageArg = CliArg("--language", ["--lang"], count: 1)
-  static CliArg targetArg = CliArg("--target", ["-t"], count: 1)
-  static CliArg syncArg = CliArg("--sync")
-  static CliArg dryArg = CliArg("--dry")
+  static CliArg excludeArg = CliArg(
+    name: "--exclude",
+    aliases: ["-x"],
+    count: 1,
+    description: "Exclude specified file or directory from compilation"
+  )
+
+  static CliArg threadsArg = CliArg(
+    name: "--threads",
+    aliases: ["-t"],
+    count: 1,
+    description: "Specify the max amount of threads to use during compilation if parallel"
+  )
+
+  static CliArg languageArg = CliArg(
+    name: "--language",
+    aliases: ["--lang"],
+    count: 1,
+    description: "Specify the source language to compile"
+  )
+
+  static CliArg targetArg = CliArg(
+    name: "--target",
+    aliases: ["-t"],
+    count: 1,
+    description: "Specify the target language to compile to"
+  )
+
+  static CliArg syncArg = CliArg(
+    name: "--sync",
+    description: "Run the compilation synchronously"
+  )
+
+  static CliArg dryArg = CliArg(
+    name: "--dry",
+    description: "Skip the code generation phase of compilation"
+  )
+
+  static CliArg helpCommand = CliArg(
+    name: "help",
+    aliases: ["?"],
+    description: "Print help information"
+  )
 
   static var Long totalLineCount = 0
   static var Long totalBytes = 0
@@ -37,14 +74,28 @@ class {
   static var ProgressBar progressBar = ProgressBar()
 
   public static async main(String[] args) {
-    let fucli = FuCli([
-      excludeArg,
-      threadsArg,
-      languageArg,
-      targetArg,
-      syncArg,
-      dryArg,
-    ]):parse(args.skip(2))
+    let cliArgs = args.count > 1 && helpCommand.matches(args[1])
+      ? args.skip(1)
+      : args.skip(2)
+
+    let fucli = FuCli(
+      [
+        excludeArg,
+        threadsArg,
+        languageArg,
+        targetArg,
+        syncArg,
+        dryArg,
+        helpCommand,
+      ],
+      description: "Flat Compiler CLI",
+      usage: "flatc {source} [OPTIONS]"
+    ):parse(cliArgs)
+
+    if (helpCommand.enabled) {
+      Console.log(fucli.getHelpString())
+      System.exit(0)
+    }
 
     let completeTimer = Timer():start()
 
