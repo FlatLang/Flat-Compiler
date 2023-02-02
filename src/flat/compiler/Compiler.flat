@@ -62,10 +62,16 @@ class {
     description: "Skip the code generation phase of compilation"
   )
 
+  static CliArg allHelpArg = CliArg(
+    name: "--all",
+    description: "Print all the help information recursively for a command or option"
+  )
+
   static CliArg helpCommand = CliArg(
     name: "help",
     aliases: ["?"],
-    description: "Print help information"
+    description: "Print help information",
+    args: [allHelpArg]
   )
 
   static var Long totalLineCount = 0
@@ -79,6 +85,7 @@ class {
       : args.skip(2)
 
     let fucli = FuCli(
+      "flatc",
       [
         excludeArg,
         threadsArg,
@@ -88,12 +95,25 @@ class {
         dryArg,
         helpCommand,
       ],
-      description: "Flat Compiler CLI",
-      usage: "flatc {source} [OPTIONS]"
+      description: "Flat Compiler CLI"
     ):parse(cliArgs)
 
     if (helpCommand.enabled) {
-      Console.log(fucli.getHelpString())
+      if (allHelpArg.enabled) {
+        fucli.usedArgs.removeFirstWhere({ _ == allHelpArg })
+        let separator = "-".repeat(80)
+        Console.log(
+          fucli.getAllHelp()
+            .map((help) => {
+              let header = help.breadcrumbs.count > 1 ? "`#{help.breadcrumbs.join(" ")}`\n\n" : ""
+              return "#{header}```\n#{help.help}\n```"
+            })
+            .join("\n\n#{separator}\n\n")
+        )
+      } else {
+        Console.log(fucli.getHelp().help)
+      }
+
       System.exit(0)
     }
 
