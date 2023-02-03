@@ -1,13 +1,16 @@
 ```
 Flat Compiler CLI
 
-USAGE:
-    flatc <COMMAND> [OPTIONS]
+Usage:
+    flatc <source> <help> [options]
 
-COMMANDS:
+Arguments:
+    <source>    The file or directory to include in the compilation
+
+Commands:
     help, ?    Print help information
 
-OPTIONS:
+Options:
     --exclude, -x         Exclude specified file or directory from compilation
     --threads, -t         Specify the max amount of threads to use during compilation if parallel
     --language, --lang    Specify the source language to compile
@@ -18,13 +21,38 @@ OPTIONS:
 
 --------------------------------------------------------------------------------
 
+`flatc <source>`
+
+```
+The file or directory to include in the compilation
+
+Usage:
+    flatc <source>
+```
+
+--------------------------------------------------------------------------------
+
 `flatc --exclude`
 
 ```
 Exclude specified file or directory from compilation
 
-USAGE:
-    flatc --exclude
+Usage:
+    flatc --exclude <source>
+
+Arguments:
+    <source>    Exclude files or directories from compilation
+```
+
+--------------------------------------------------------------------------------
+
+`flatc --exclude <source>`
+
+```
+Exclude files or directories from compilation
+
+Usage:
+    flatc --exclude <source>
 ```
 
 --------------------------------------------------------------------------------
@@ -34,8 +62,22 @@ USAGE:
 ```
 Specify the max amount of threads to use during compilation if parallel
 
-USAGE:
-    flatc --threads
+Usage:
+    flatc --threads <count>
+
+Arguments:
+    <count>    The max amount of threads to use
+```
+
+--------------------------------------------------------------------------------
+
+`flatc --threads <count>`
+
+```
+The max amount of threads to use
+
+Usage:
+    flatc --threads <count>
 ```
 
 --------------------------------------------------------------------------------
@@ -45,8 +87,22 @@ USAGE:
 ```
 Specify the source language to compile
 
-USAGE:
-    flatc --language
+Usage:
+    flatc --language <name>
+
+Arguments:
+    <name>    The name of the source language
+```
+
+--------------------------------------------------------------------------------
+
+`flatc --language <name>`
+
+```
+The name of the source language
+
+Usage:
+    flatc --language <name>
 ```
 
 --------------------------------------------------------------------------------
@@ -56,8 +112,22 @@ USAGE:
 ```
 Specify the target language to compile to
 
-USAGE:
-    flatc --target
+Usage:
+    flatc --target <languageName>
+
+Arguments:
+    <languageName>    The target language to compile to
+```
+
+--------------------------------------------------------------------------------
+
+`flatc --target <languageName>`
+
+```
+The target language to compile to
+
+Usage:
+    flatc --target <languageName>
 ```
 
 --------------------------------------------------------------------------------
@@ -67,7 +137,7 @@ USAGE:
 ```
 Run the compilation synchronously
 
-USAGE:
+Usage:
     flatc --sync
 ```
 
@@ -78,7 +148,7 @@ USAGE:
 ```
 Skip the code generation phase of compilation
 
-USAGE:
+Usage:
     flatc --dry
 ```
 
@@ -89,11 +159,25 @@ USAGE:
 ```
 Print help information
 
-USAGE:
-    flatc help [OPTIONS]
+Usage:
+    flatc help <name> [--all]
 
-OPTIONS:
-    --all    Print all the help information recursively for a command or option
+Arguments:
+    <name>    The name of the argument, command, or option to get help on
+
+Options:
+    --all    Print all the help information recursively for an argument, command, or option
+```
+
+--------------------------------------------------------------------------------
+
+`flatc help <name>`
+
+```
+The name of the argument, command, or option to get help on
+
+Usage:
+    flatc help <name>
 ```
 
 --------------------------------------------------------------------------------
@@ -101,8 +185,8 @@ OPTIONS:
 `flatc help --all`
 
 ```
-Print all the help information recursively for a command or option
+Print all the help information recursively for an argument, command, or option
 
-USAGE:
+Usage:
     flatc help --all
 ```
