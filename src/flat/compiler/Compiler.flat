@@ -179,11 +179,9 @@ class {
         : Array():add(inputFile)
     })
 
-    let failures = if (syncArg.enabled) {
-      files.filterAsync({ !compileFile(_) })
-    } else {
-      files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg["count"].value) : 10)
-    }
+    let failures = syncArg.enabled
+      ? files.filterAsync({ !compileFile(_) })
+      : files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg["count"].value) : 10)
 
     completeTimer.stop()
 
