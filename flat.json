@@ -26,7 +26,8 @@
         "github:FlatLang/FuCli": "master",
         "github:FlatLang/Regex": "master",
         "github:FlatLang/Progress-Bar": "master",
-        "github:FlatLang/Console-Escape-Codes": "master"
+        "github:FlatLang/Console-Escape-Codes": "master",
+        "github:FlatLang/TerminalSize": "master"
       }
     },
     "flatc": {

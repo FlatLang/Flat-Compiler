@@ -15,11 +15,13 @@ import flat/eventstream
 import flat/fucli
 import flat/regex
 import flat/progressbar
+import flat/terminalsize
 
 import flat/regex/RegexStringExtensions
 import flat/writer/WriterPatternExtensions
 
 import static flat/console/EscapeCode
+import static flat/Math
 
 class {
   static Logger log = Logger(Compiler.class)
@@ -130,6 +132,10 @@ class {
   static var ProgressBar progressBar = ProgressBar()
 
   public static async main(String[] args) {
+    if (let dimensions = TerminalSize.getTerminalSize()) {
+      log.lineLength = dimensions.columns
+    }
+
     let fucli = FuCli(
       "flatc",
       [
@@ -322,9 +328,14 @@ class {
   }
 
   static logProgress() {
-    let prefix = loggedProgress ? cursorMoveUp(1) + eraseFromCursorToEndOfLine() : ""
+    let prefix = loggedProgress
+      ? cursorMoveUp(1) + eraseFromCursorToEndOfLine()
+      : ""
 
-    Console.log(prefix + progressBar.getProgressLog())
+    let lineLength = min(80, max(40, log.lineLength))
+    let progress = progressBar.getProgressLog(lineLength)
+
+    Console.log(prefix + progress)
 
     loggedProgress = true
   }
