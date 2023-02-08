@@ -198,10 +198,11 @@ class {
     let perSecondStats = "#{filesPerSecond} files/sec, #{linesPerSecond} lines/sec, #{Long.toFileSize(bytesPerSecond)}/sec"
 
     if (failures.count > 0) {
-      log.info("Compiled #{files.count - failures.count}/#{files.count} file#{files.count == 1 ? "" : "s"} with #{failures.count} failure#{failures.count == 1 ? "" : "s"} in #{completeTimer.duration.millisToTime()} (#{perSecondStats})")
+      let successCount = files.count - failures.count
+      log.info("Compiled #{successCount.toEnglish()}/#{files.count.toEnglish()} file#{files.count == 1 ? "" : "s"} with #{failures.count.toEnglish()} failure#{failures.count == 1 ? "" : "s"} in #{completeTimer.duration.millisToTime()} (#{perSecondStats})")
       System.exit(1)
     } else {
-      log.info("Successfully compiled #{files.count} file#{files.count == 1 ? "" : "s"}, #{totalLineCount} line#{totalLineCount == 1 ? "" : "s"}, #{Long.toFileSize(totalBytes)} in #{completeTimer.duration.millisToTime()} (#{perSecondStats})")
+      log.info("Successfully compiled #{files.count.toEnglish()} file#{files.count == 1 ? "" : "s"}, #{totalLineCount.toEnglish()} line#{totalLineCount == 1 ? "" : "s"}, #{Long.toFileSize(totalBytes)} in #{completeTimer.duration.millisToTime()} (#{perSecondStats})")
     }
   }
 
