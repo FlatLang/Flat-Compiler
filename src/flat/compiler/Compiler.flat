@@ -104,6 +104,17 @@ class {
     description: "Skip the code generation phase of compilation"
   )
 
+  static CliArg quietArg = CliArg(
+    name: "--quiet",
+    aliases: ["-q"],
+    description: "Suppress compiler logging output"
+  )
+
+  static CliArg noLogProgressArg = CliArg(
+    name: "--no-log-progress",
+    description: "Do not log progress bar output"
+  )
+
   static CliArg helpCommandArg = CliArg(
     name: "name",
     description: "The name of the argument, command, or option to get help on",
@@ -146,6 +157,8 @@ class {
         targetArg,
         syncArg,
         dryArg,
+        quietArg,
+        noLogProgressArg,
         helpCommand,
       ],
       description: "Flat Compiler CLI"
@@ -168,6 +181,12 @@ class {
       }
 
       System.exit(0)
+    }
+
+    let originalLoggingLevel = log.loggingLevel
+
+    if (quietArg.enabled) {
+      log.loggingLevel = Logger.OFF
     }
 
     let completeTimer = Timer():start()
@@ -200,6 +219,10 @@ class {
     let bytesPerSecond = Math.round((byteCount / completeTimer.duration) * 1000)
 
     let perSecondStats = "#{filesPerSecond} files/sec, #{linesPerSecond} lines/sec, #{Long.toFileSize(bytesPerSecond)}/sec"
+
+    if (quietArg.enabled) {
+      log.loggingLevel = originalLoggingLevel
+    }
 
     if (failures.count > 0) {
       let successCount = files.count - failures.count
@@ -328,6 +351,8 @@ class {
   }
 
   static logProgress() {
+    if (quietArg.enabled || noLogProgressArg.enabled) return
+
     let prefix = loggedProgress
       ? cursorMoveUp(1) + eraseFromCursorToEndOfLine()
       : ""
