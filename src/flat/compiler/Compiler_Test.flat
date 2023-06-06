@@ -3,9 +3,9 @@ package flat/compiler
 import flat/compiler/Compiler
 
 testable class {
-  test `can create`() {
-    let value = Compiler()
+    test `can create`() {
+        let value = Compiler()
 
-    expect(value).toNotBe(null)
-  }
+        expect(value).toNotBe(null)
+    }
 }
