@@ -12,22 +12,22 @@
     "main": {
       "source": "src",
       "dependencies": {
-        "https://github.com/FlatLang/System": "master",
-        "https://github.com/FlatLang/IO": "master",
-        "https://github.com/FlatLang/Flat-Lexer": "master",
-        "https://github.com/FlatLang/Parser-Core": "master",
-        "https://github.com/FlatLang/Flat-Parser": "master",
-        "https://github.com/FlatLang/Java-Parser": "master",
-        "https://github.com/FlatLang/Flat-Compiler-Models": "master",
-        "https://github.com/FlatLang/Flat-Flat-Writer": "master",
-        "https://github.com/FlatLang/Flat-ES6-Writer": "master",
-        "https://github.com/FlatLang/Time": "master",
-        "https://github.com/FlatLang/Logger": "master",
-        "https://github.com/FlatLang/FuCli": "master",
-        "https://github.com/FlatLang/Regex": "master",
-        "https://github.com/FlatLang/Progress-Bar": "master",
-        "https://github.com/FlatLang/Console-Escape-Codes": "master",
-        "https://github.com/FlatLang/TerminalSize": "master"
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Flat-Lexer.git": "master",
+        "https://github.com/FlatLang/Parser-Core.git": "master",
+        "https://github.com/FlatLang/Flat-Parser.git": "master",
+        "https://github.com/FlatLang/Java-Parser.git": "master",
+        "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
+        "https://github.com/FlatLang/Flat-Flat-Writer.git": "master",
+        "https://github.com/FlatLang/Flat-ES6-Writer.git": "master",
+        "https://github.com/FlatLang/Time.git": "master",
+        "https://github.com/FlatLang/Logger.git": "master",
+        "https://github.com/FlatLang/FuCli.git": "master",
+        "https://github.com/FlatLang/Regex.git": "master",
+        "https://github.com/FlatLang/Progress-Bar.git": "master",
+        "https://github.com/FlatLang/Console-Escape-Codes.git": "master",
+        "https://github.com/FlatLang/TerminalSize.git": "master"
       }
     },
     "flatc": {
@@ -39,7 +39,7 @@
       "mainClass": "flat/compiler/Compiler_TestSuite",
       "source": "src/**/*_Test*.flat",
       "dependencies": {
-        "https://github.com/FlatLang/Test": "master"
+        "https://github.com/FlatLang/Test.git": "master"
       }
     }
   }
